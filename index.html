@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vid to GIF</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Vid to GIF</h1>
+
+    <div class="folder-section">
+      <button id="select-folder" type="button">Select Folder</button>
+      <span id="folder-path" class="folder-path">No folder selected</span>
+    </div>
+
+    <div class="settings">
+      <div class="setting">
+        <label for="width">Width (px)</label>
+        <input type="number" id="width" value="1080" min="100" max="3840" />
+      </div>
+      <div class="setting">
+        <label for="fps">FPS</label>
+        <input type="number" id="fps" value="15" min="1" max="60" />
+      </div>
+      <div class="setting checkbox-setting">
+        <input type="checkbox" id="delete-originals" />
+        <label for="delete-originals">Delete originals after conversion</label>
+      </div>
+    </div>
+
+    <button id="convert" type="button" disabled>Convert</button>
+
+    <div id="progress-area" class="progress-area hidden">
+      <div id="file-list"></div>
+      <div id="summary" class="summary hidden"></div>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

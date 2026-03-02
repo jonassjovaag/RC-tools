@@ -1,0 +1,9 @@
+node_modules/
+src-tauri/target/
+src-tauri/gen/
+dist/
+*.DS_Store
+app-icon.png
+
+# CI downloads static ffmpeg binaries per platform
+src-tauri/binaries/ffmpeg-*

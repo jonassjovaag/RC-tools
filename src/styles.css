@@ -1,0 +1,182 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.container {
+  width: 100%;
+  max-width: 560px;
+}
+
+h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #fff;
+}
+
+button {
+  background: #6c63ff;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+button:hover:not(:disabled) {
+  background: #5a52d5;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.folder-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.folder-path {
+  font-size: 0.85rem;
+  color: #888;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+}
+
+.setting {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.setting label {
+  font-size: 0.8rem;
+  color: #aaa;
+}
+
+.setting input[type="number"] {
+  width: 100px;
+  padding: 0.4rem 0.6rem;
+  background: #16213e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-size: 0.9rem;
+}
+
+.checkbox-setting {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.checkbox-setting label {
+  font-size: 0.85rem;
+  color: #ccc;
+  cursor: pointer;
+}
+
+#convert {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.progress-area {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.hidden {
+  display: none;
+}
+
+.file-item {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.85rem;
+}
+
+.file-item:last-child {
+  border-bottom: none;
+}
+
+.file-item .filename {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.file-item .status {
+  color: #888;
+  font-size: 0.8rem;
+}
+
+.file-item .status.done {
+  color: #4caf50;
+}
+
+.file-item .status.error {
+  color: #f44336;
+}
+
+.file-item .status.converting {
+  color: #6c63ff;
+}
+
+.file-item .progress-bar {
+  height: 3px;
+  background: #333;
+  border-radius: 2px;
+  margin-top: 0.3rem;
+  overflow: hidden;
+}
+
+.file-item .progress-bar .fill {
+  height: 100%;
+  background: #6c63ff;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.summary {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #4caf50;
+}
