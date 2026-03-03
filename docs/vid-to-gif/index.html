@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vid to GIF — RC Tools</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <a href="../" style="display:inline-block;font-size:0.85rem;color:#6c63ff;text-decoration:none;margin-bottom:1rem;">← RC Tools</a>
+    <h1>Vid to GIF</h1>
+    <p class="subtitle">Convert videos to high-quality GIFs — runs entirely in your browser</p>
+
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" multiple accept="video/*" />
+      <p>Drop video files here or <span class="browse">browse</span></p>
+      <p class="formats">.mp4 .avi .mov .mkv .webm .wmv .flv .m4v</p>
+    </div>
+
+    <div id="file-list-preview" class="file-list-preview hidden"></div>
+
+    <div class="settings">
+      <div class="setting">
+        <label for="width">Width (px)</label>
+        <input type="number" id="width" value="1080" min="100" max="3840" />
+      </div>
+      <div class="setting">
+        <label for="fps">FPS</label>
+        <input type="number" id="fps" value="15" min="1" max="60" />
+      </div>
+    </div>
+
+    <div class="button-row">
+      <button id="convert" type="button" disabled>Convert</button>
+      <button id="abort" type="button" class="abort-btn hidden">Abort</button>
+    </div>
+
+    <div id="loading" class="loading hidden">Loading ffmpeg (first time takes ~15s)...</div>
+
+    <div id="progress-area" class="progress-area hidden">
+      <div id="results"></div>
+      <div id="summary" class="summary hidden"></div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clean Word Formatting — RC Tools</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <a href="../" class="back">← RC Tools</a>
+    <h1>Clean Word Formatting</h1>
+    <p class="subtitle">Upload a .docx file — get clean content without Word's proprietary junk</p>
+
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" accept=".docx,.doc" />
+      <p>Drop a .docx file here or <span class="browse">browse</span></p>
+    </div>
+
+    <div id="actions" class="actions hidden">
+      <button id="copy-rich" type="button">Copy formatted text</button>
+      <button id="copy-plain" type="button" class="secondary">Copy plain text</button>
+      <button id="download-doc" type="button" class="secondary">Download as .doc</button>
+    </div>
+
+    <div id="toast" class="toast hidden">Copied!</div>
+
+    <div id="preview" class="preview hidden">
+      <div id="preview-content"></div>
+    </div>
+
+    <div id="error" class="error hidden"></div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
