@@ -1,5 +1,5 @@
-import { FFmpeg } from "https://esm.sh/@ffmpeg/ffmpeg@0.12.10";
-import { fetchFile, toBlobURL } from "https://esm.sh/@ffmpeg/util@0.12.1";
+const { FFmpeg } = FFmpegWASM;
+const { fetchFile, toBlobURL } = FFmpegUtil;
 
 const dropZone = document.getElementById("drop-zone");
 const fileInput = document.getElementById("file-input");
@@ -52,23 +52,32 @@ async function loadFFmpeg() {
   if (ffmpeg) return;
 
   loadingEl.classList.remove("hidden");
-  ffmpeg = new FFmpeg();
+  loadingEl.textContent = "Loading ffmpeg (~25 MB, first time only)...";
 
-  ffmpeg.on("progress", ({ progress }) => {
-    if (currentItemEl) {
-      const pct = Math.round(Math.max(0, Math.min(progress, 1)) * 100);
-      const statusEl = currentItemEl.querySelector(".status");
-      const fillEl = currentItemEl.querySelector(".fill");
-      statusEl.textContent = `Converting... ${pct}%`;
-      fillEl.style.width = `${pct}%`;
-    }
-  });
+  try {
+    ffmpeg = new FFmpeg();
 
-  const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
-  await ffmpeg.load({
-    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
-  });
+    ffmpeg.on("progress", ({ progress }) => {
+      if (currentItemEl) {
+        const pct = Math.round(Math.max(0, Math.min(progress, 1)) * 100);
+        const statusEl = currentItemEl.querySelector(".status");
+        const fillEl = currentItemEl.querySelector(".fill");
+        statusEl.textContent = `Converting... ${pct}%`;
+        fillEl.style.width = `${pct}%`;
+      }
+    });
+
+    const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
+    await ffmpeg.load({
+      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+    });
+  } catch (err) {
+    loadingEl.textContent = `Failed to load ffmpeg: ${err.message}`;
+    loadingEl.style.color = "#f44336";
+    ffmpeg = null;
+    throw err;
+  }
 
   loadingEl.classList.add("hidden");
 }
@@ -89,7 +98,13 @@ convertBtn.addEventListener("click", async () => {
   summaryEl.style.color = "";
   progressArea.classList.remove("hidden");
 
-  await loadFFmpeg();
+  try {
+    await loadFFmpeg();
+  } catch {
+    convertBtn.disabled = false;
+    abortBtn.classList.add("hidden");
+    return;
+  }
 
   const total = selectedFiles.length;
   let converted = 0;
@@ -191,10 +206,9 @@ abortBtn.addEventListener("click", () => {
   aborted = true;
   abortBtn.disabled = true;
   abortBtn.textContent = "Aborting...";
-  // Terminate ffmpeg execution
   if (ffmpeg) {
     ffmpeg.terminate();
-    ffmpeg = null; // Will be reloaded on next convert
+    ffmpeg = null;
   }
 });
 
