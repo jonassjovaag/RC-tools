@@ -13,9 +13,17 @@ const summaryEl = document.getElementById("summary");
 const widthInput = document.getElementById("width");
 const fpsInput = document.getElementById("fps");
 
+const sourceFpsEl = document.getElementById("source-fps");
+
 let selectedFiles = [];
 let ffmpeg = null;
 let aborted = false;
+let detectedFps = null;
+let fpsManuallyChanged = false;
+
+fpsInput.addEventListener("input", () => {
+  fpsManuallyChanged = true;
+});
 
 // Drag and drop
 dropZone.addEventListener("dragover", (e) => {
@@ -41,6 +49,10 @@ function handleFiles(fileList) {
   selectedFiles = Array.from(fileList).filter((f) => f.type.startsWith("video/"));
   if (selectedFiles.length === 0) return;
 
+  fpsManuallyChanged = false;
+  detectedFps = null;
+  sourceFpsEl.classList.add("hidden");
+
   fileListPreview.innerHTML = selectedFiles
     .map((f) => `<div class="file-entry">${f.name} (${formatSize(f.size)})</div>`)
     .join("");
@@ -56,6 +68,18 @@ async function loadFFmpeg() {
 
   try {
     ffmpeg = new FFmpeg();
+
+    ffmpeg.on("log", ({ message }) => {
+      const match = message.match(/(\d+(?:\.\d+)?)\s*fps/);
+      if (match) {
+        detectedFps = parseFloat(match[1]);
+        sourceFpsEl.textContent = `(source: ${detectedFps} fps)`;
+        sourceFpsEl.classList.remove("hidden");
+        if (!fpsManuallyChanged) {
+          fpsInput.value = Math.round(detectedFps);
+        }
+      }
+    });
 
     ffmpeg.on("progress", ({ progress }) => {
       if (currentItemEl && currentPhase === "gif") {
