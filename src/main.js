@@ -8,11 +8,13 @@ const widthInput = document.getElementById("width");
 const fpsInput = document.getElementById("fps");
 const deleteOriginalsInput = document.getElementById("delete-originals");
 const convertBtn = document.getElementById("convert");
+const abortBtn = document.getElementById("abort");
 const progressArea = document.getElementById("progress-area");
 const fileList = document.getElementById("file-list");
 const summaryEl = document.getElementById("summary");
 
 let selectedFolder = null;
+let aborted = false;
 
 selectFolderBtn.addEventListener("click", async () => {
   const folder = await open({ directory: true, multiple: false });
@@ -34,9 +36,12 @@ convertBtn.addEventListener("click", async () => {
   // Reset UI
   fileList.innerHTML = "";
   summaryEl.classList.add("hidden");
+  summaryEl.style.color = "";
   progressArea.classList.remove("hidden");
   convertBtn.disabled = true;
   selectFolderBtn.disabled = true;
+  abortBtn.classList.remove("hidden");
+  aborted = false;
 
   // Listen for progress events
   const unlisten = await listen("conversion-progress", (event) => {
@@ -52,7 +57,12 @@ convertBtn.addEventListener("click", async () => {
       deleteOriginals,
     });
 
-    summaryEl.textContent = `Done: ${result.converted}/${result.total} converted`;
+    if (aborted) {
+      summaryEl.textContent = `Aborted — ${result.converted}/${result.total} converted`;
+      summaryEl.style.color = "#ff9800";
+    } else {
+      summaryEl.textContent = `Done: ${result.converted}/${result.total} converted`;
+    }
     summaryEl.classList.remove("hidden");
   } catch (err) {
     summaryEl.textContent = `Error: ${err}`;
@@ -62,7 +72,17 @@ convertBtn.addEventListener("click", async () => {
     unlisten();
     convertBtn.disabled = false;
     selectFolderBtn.disabled = false;
+    abortBtn.classList.add("hidden");
+    abortBtn.disabled = false;
+    abortBtn.textContent = "Abort";
   }
+});
+
+abortBtn.addEventListener("click", async () => {
+  aborted = true;
+  abortBtn.disabled = true;
+  abortBtn.textContent = "Aborting...";
+  await invoke("abort_conversion");
 });
 
 function updateFileStatus(fileName, status, detail, current, total, progress) {

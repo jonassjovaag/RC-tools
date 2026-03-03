@@ -1,6 +1,8 @@
 use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use tauri::Emitter;
 use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_shell::ShellExt;
@@ -93,6 +95,7 @@ fn parse_out_time_us(line: &str) -> Option<u64> {
 }
 
 /// Run an ffmpeg pass using spawn(), streaming progress via -progress pipe:1.
+/// Returns Err("aborted") if the abort flag is set.
 async fn run_ffmpeg_pass(
     app: &tauri::AppHandle,
     args: Vec<String>,
@@ -102,8 +105,9 @@ async fn run_ffmpeg_pass(
     file_name: &str,
     current: usize,
     total: usize,
+    abort: &AtomicBool,
 ) -> Result<(), String> {
-    let (mut rx, _child) = app
+    let (mut rx, child) = app
         .shell()
         .sidecar("ffmpeg")
         .map_err(|e| format!("Sidecar error: {}", e))?
@@ -115,6 +119,10 @@ async fn run_ffmpeg_pass(
     let mut exit_code: Option<i32> = None;
 
     while let Some(event) = rx.recv().await {
+        if abort.load(Ordering::Relaxed) {
+            let _ = child.kill();
+            return Err("aborted".to_string());
+        }
         match event {
             CommandEvent::Stdout(bytes) => {
                 let line = String::from_utf8_lossy(&bytes);
@@ -154,6 +162,13 @@ async fn run_ffmpeg_pass(
     }
 }
 
+struct AbortFlag(AtomicBool);
+
+#[tauri::command]
+fn abort_conversion(flag: tauri::State<'_, Arc<AbortFlag>>) {
+    flag.0.store(true, Ordering::Relaxed);
+}
+
 #[tauri::command]
 async fn convert_videos(
     folder: String,
@@ -161,7 +176,11 @@ async fn convert_videos(
     fps: u32,
     delete_originals: bool,
     app: tauri::AppHandle,
+    flag: tauri::State<'_, Arc<AbortFlag>>,
 ) -> Result<ConvertResult, String> {
+    // Reset abort flag at the start of each run
+    flag.0.store(false, Ordering::Relaxed);
+
     let folder_path = PathBuf::from(&folder);
     if !folder_path.is_dir() {
         return Err(format!("'{}' is not a directory", folder));
@@ -174,8 +193,13 @@ async fn convert_videos(
 
     let total = videos.len();
     let mut converted = 0;
+    let abort = &flag.0;
 
     for (i, video) in videos.iter().enumerate() {
+        if abort.load(Ordering::Relaxed) {
+            return Ok(ConvertResult { converted, total });
+        }
+
         let file_name = video
             .file_name()
             .unwrap_or_default()
@@ -218,9 +242,13 @@ async fn convert_videos(
         ];
 
         if let Err(detail) =
-            run_ffmpeg_pass(&app, palette_args, duration, 0.0, 20.0, &file_name, current, total)
+            run_ffmpeg_pass(&app, palette_args, duration, 0.0, 20.0, &file_name, current, total, abort)
                 .await
         {
+            if detail == "aborted" {
+                let _ = fs::remove_file(&palette_path);
+                return Ok(ConvertResult { converted, total });
+            }
             let _ = app.emit(
                 "conversion-progress",
                 ProgressPayload {
@@ -255,8 +283,14 @@ async fn convert_videos(
         ];
 
         if let Err(detail) =
-            run_ffmpeg_pass(&app, gif_args, duration, 20.0, 80.0, &file_name, current, total).await
+            run_ffmpeg_pass(&app, gif_args, duration, 20.0, 80.0, &file_name, current, total, abort).await
         {
+            if detail == "aborted" {
+                let _ = fs::remove_file(&palette_path);
+                // Clean up partial GIF
+                let _ = fs::remove_file(&gif_path);
+                return Ok(ConvertResult { converted, total });
+            }
             let _ = app.emit(
                 "conversion-progress",
                 ProgressPayload {
@@ -323,7 +357,8 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![convert_videos])
+        .manage(Arc::new(AbortFlag(AtomicBool::new(false))))
+        .invoke_handler(tauri::generate_handler![convert_videos, abort_conversion])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
