@@ -239,6 +239,20 @@ button:disabled {
   text-decoration: underline;
 }
 
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: #aaa;
+  cursor: pointer;
+  margin-top: 0.25rem;
+}
+
+.checkbox input {
+  accent-color: #6c63ff;
+}
+
 .source-fps {
   font-weight: 400;
   color: #666;

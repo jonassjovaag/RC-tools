@@ -14,15 +14,18 @@ const widthInput = document.getElementById("width");
 const fpsInput = document.getElementById("fps");
 
 const sourceFpsEl = document.getElementById("source-fps");
+const useSourceFpsCheckbox = document.getElementById("use-source-fps");
 
 let selectedFiles = [];
 let ffmpeg = null;
 let aborted = false;
 let detectedFps = null;
-let fpsManuallyChanged = false;
 
-fpsInput.addEventListener("input", () => {
-  fpsManuallyChanged = true;
+// When checkbox is toggled on and we already have a detected FPS, apply it
+useSourceFpsCheckbox.addEventListener("change", () => {
+  if (useSourceFpsCheckbox.checked && detectedFps) {
+    fpsInput.value = Math.round(detectedFps);
+  }
 });
 
 // Drag and drop
@@ -49,7 +52,6 @@ function handleFiles(fileList) {
   selectedFiles = Array.from(fileList).filter((f) => f.type.startsWith("video/"));
   if (selectedFiles.length === 0) return;
 
-  fpsManuallyChanged = false;
   detectedFps = null;
   sourceFpsEl.classList.add("hidden");
 
@@ -75,7 +77,7 @@ async function loadFFmpeg() {
         detectedFps = parseFloat(match[1]);
         sourceFpsEl.textContent = `(source: ${detectedFps} fps)`;
         sourceFpsEl.classList.remove("hidden");
-        if (!fpsManuallyChanged) {
+        if (useSourceFpsCheckbox.checked) {
           fpsInput.value = Math.round(detectedFps);
         }
       }
