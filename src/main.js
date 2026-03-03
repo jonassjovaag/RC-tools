@@ -40,8 +40,8 @@ convertBtn.addEventListener("click", async () => {
 
   // Listen for progress events
   const unlisten = await listen("conversion-progress", (event) => {
-    const { fileName, status, detail, current, total } = event.payload;
-    updateFileStatus(fileName, status, detail, current, total);
+    const { fileName, status, detail, current, total, progress } = event.payload;
+    updateFileStatus(fileName, status, detail, current, total, progress);
   });
 
   try {
@@ -65,7 +65,7 @@ convertBtn.addEventListener("click", async () => {
   }
 });
 
-function updateFileStatus(fileName, status, detail, current, total) {
+function updateFileStatus(fileName, status, detail, current, total, progress) {
   let item = document.getElementById(`file-${CSS.escape(fileName)}`);
 
   if (!item) {
@@ -84,9 +84,10 @@ function updateFileStatus(fileName, status, detail, current, total) {
   const fillEl = item.querySelector(".fill");
 
   if (status === "converting") {
-    statusEl.textContent = "Converting...";
+    const pct = Math.min(progress || 0, 99);
+    statusEl.textContent = `Converting... ${pct}%`;
     statusEl.className = "status converting";
-    fillEl.style.width = "50%";
+    fillEl.style.width = `${pct}%`;
   } else if (status === "done") {
     statusEl.textContent = detail || "Done";
     statusEl.className = "status done";
