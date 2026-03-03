@@ -1,0 +1,239 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.container {
+  width: 100%;
+  max-width: 560px;
+}
+
+h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 1.5rem;
+}
+
+.drop-zone {
+  border: 2px dashed #444;
+  border-radius: 10px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.drop-zone:hover,
+.drop-zone.dragover {
+  border-color: #6c63ff;
+  background: rgba(108, 99, 255, 0.05);
+}
+
+.drop-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.drop-zone .browse {
+  color: #6c63ff;
+  text-decoration: underline;
+}
+
+.drop-zone .formats {
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+.file-list-preview {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.file-list-preview .file-entry {
+  padding: 0.25rem 0;
+  color: #ccc;
+}
+
+.hidden {
+  display: none;
+}
+
+.settings {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+}
+
+.setting {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.setting label {
+  font-size: 0.8rem;
+  color: #aaa;
+}
+
+.setting input[type="number"] {
+  width: 100px;
+  padding: 0.4rem 0.6rem;
+  background: #16213e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-size: 0.9rem;
+}
+
+button {
+  background: #6c63ff;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+button:hover:not(:disabled) {
+  background: #5a52d5;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.button-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+#convert {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 1rem;
+}
+
+.abort-btn {
+  padding: 0.75rem 1.2rem;
+  font-size: 1rem;
+  background: #d32f2f;
+}
+
+.abort-btn:hover:not(:disabled) {
+  background: #b71c1c;
+}
+
+.loading {
+  text-align: center;
+  padding: 1rem;
+  color: #6c63ff;
+  font-size: 0.9rem;
+}
+
+.progress-area {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.file-item {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.85rem;
+}
+
+.file-item:last-child {
+  border-bottom: none;
+}
+
+.file-item .filename {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.file-item .status {
+  color: #888;
+  font-size: 0.8rem;
+}
+
+.file-item .status.done {
+  color: #4caf50;
+}
+
+.file-item .status.error {
+  color: #f44336;
+}
+
+.file-item .status.converting {
+  color: #6c63ff;
+}
+
+.file-item .progress-bar {
+  height: 3px;
+  background: #333;
+  border-radius: 2px;
+  margin-top: 0.3rem;
+  overflow: hidden;
+}
+
+.file-item .progress-bar .fill {
+  height: 100%;
+  background: #6c63ff;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.file-item .download-link {
+  display: inline-block;
+  margin-top: 0.3rem;
+  color: #6c63ff;
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+
+.file-item .download-link:hover {
+  text-decoration: underline;
+}
+
+.summary {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #4caf50;
+}
