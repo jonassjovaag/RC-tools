@@ -41,6 +41,12 @@ h1 {
 .subtitle {
   font-size: 0.85rem;
   color: #888;
+  margin-bottom: 0.3rem;
+}
+
+.keeps {
+  font-size: 0.8rem;
+  color: #666;
   margin-bottom: 1.5rem;
 }
 
