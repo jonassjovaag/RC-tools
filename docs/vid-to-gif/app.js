@@ -72,8 +72,11 @@ async function loadFFmpeg() {
     ffmpeg = new FFmpeg();
 
     ffmpeg.on("log", ({ message }) => {
-      const match = message.match(/(\d+(?:\.\d+)?)\s*fps/);
-      if (match) {
+      // Match only the stream info line, e.g.:
+      // "Stream #0:0: Video: h264 ... 25 fps"
+      // Avoid matching encoding speed lines like "fps= 45.2"
+      const match = message.match(/Stream\s+#.*Video:.*\b(\d+(?:\.\d+)?)\s*fps/);
+      if (match && !detectedFps) {
         detectedFps = parseFloat(match[1]);
         sourceFpsEl.textContent = `(source: ${detectedFps} fps)`;
         sourceFpsEl.classList.remove("hidden");
@@ -117,7 +120,6 @@ convertBtn.addEventListener("click", async () => {
   if (selectedFiles.length === 0) return;
 
   const width = parseInt(widthInput.value) || 1080;
-  const fps = parseInt(fpsInput.value) || 15;
 
   convertBtn.disabled = true;
   abortBtn.classList.remove("hidden");
@@ -160,21 +162,28 @@ convertBtn.addEventListener("click", async () => {
       // Write input file to ffmpeg virtual filesystem
       await ffmpeg.writeFile("input", await fetchFile(file));
 
-      const filters = `fps=${fps},scale=${width}:-1:flags=lanczos`;
       const statusEl = item.querySelector(".status");
       const fillEl = item.querySelector(".fill");
 
-      // Pass 1: palette (no progress events, show pulsing bar)
+      // Pass 1: palette — also triggers FPS detection from stream info logs
       currentPhase = "palette";
+      detectedFps = null;
       statusEl.textContent = "Generating palette...";
       fillEl.classList.add("pulse");
+
+      // Use a temporary filter for palette pass (FPS not critical here)
+      const paletteFps = parseInt(fpsInput.value) || 15;
       await ffmpeg.exec([
         "-i", "input",
-        "-vf", `${filters},palettegen=stats_mode=diff`,
+        "-vf", `fps=${paletteFps},scale=${width}:-1:flags=lanczos,palettegen=stats_mode=diff`,
         "-y", "palette.png",
       ]);
 
       if (aborted) break;
+
+      // Read FPS after detection — use the (potentially updated) input value
+      const fps = parseInt(fpsInput.value) || 15;
+      const filters = `fps=${fps},scale=${width}:-1:flags=lanczos`;
 
       // Pass 2: GIF (progress events work here)
       currentPhase = "gif";
