@@ -217,6 +217,16 @@ button:disabled {
   transition: width 0.3s;
 }
 
+.file-item .progress-bar .fill.pulse {
+  width: 100% !important;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
 .file-item .download-link {
   display: inline-block;
   margin-top: 0.3rem;

@@ -58,11 +58,11 @@ async function loadFFmpeg() {
     ffmpeg = new FFmpeg();
 
     ffmpeg.on("progress", ({ progress }) => {
-      if (currentItemEl) {
+      if (currentItemEl && currentPhase === "gif") {
         const pct = Math.round(Math.max(0, Math.min(progress, 1)) * 100);
         const statusEl = currentItemEl.querySelector(".status");
         const fillEl = currentItemEl.querySelector(".fill");
-        statusEl.textContent = `Converting... ${pct}%`;
+        statusEl.textContent = `Creating GIF... ${pct}%`;
         fillEl.style.width = `${pct}%`;
       }
     });
@@ -85,6 +85,7 @@ async function loadFFmpeg() {
 }
 
 let currentItemEl = null;
+let currentPhase = "";
 
 convertBtn.addEventListener("click", async () => {
   if (selectedFiles.length === 0) return;
@@ -134,8 +135,13 @@ convertBtn.addEventListener("click", async () => {
       await ffmpeg.writeFile("input", await fetchFile(file));
 
       const filters = `fps=${fps},scale=${width}:-1:flags=lanczos`;
+      const statusEl = item.querySelector(".status");
+      const fillEl = item.querySelector(".fill");
 
-      // Pass 1: palette
+      // Pass 1: palette (no progress events, show pulsing bar)
+      currentPhase = "palette";
+      statusEl.textContent = "Generating palette...";
+      fillEl.classList.add("pulse");
       await ffmpeg.exec([
         "-i", "input",
         "-vf", `${filters},palettegen=stats_mode=diff`,
@@ -144,7 +150,11 @@ convertBtn.addEventListener("click", async () => {
 
       if (aborted) break;
 
-      // Pass 2: GIF
+      // Pass 2: GIF (progress events work here)
+      currentPhase = "gif";
+      statusEl.textContent = "Creating GIF... 0%";
+      fillEl.classList.remove("pulse");
+      fillEl.style.width = "0%";
       await ffmpeg.exec([
         "-i", "input",
         "-i", "palette.png",
@@ -159,10 +169,9 @@ convertBtn.addEventListener("click", async () => {
       const blob = new Blob([data.buffer], { type: "image/gif" });
       const url = URL.createObjectURL(blob);
 
-      const statusEl = item.querySelector(".status");
-      const fillEl = item.querySelector(".fill");
       statusEl.textContent = `${formatSize(file.size)} → ${formatSize(blob.size)}`;
       statusEl.className = "status done";
+      fillEl.classList.remove("pulse");
       fillEl.style.width = "100%";
 
       const link = document.createElement("a");
@@ -179,12 +188,13 @@ convertBtn.addEventListener("click", async () => {
       await ffmpeg.deleteFile("palette.png");
       await ffmpeg.deleteFile("output.gif");
     } catch (err) {
-      const statusEl = item.querySelector(".status");
-      const fillEl = item.querySelector(".fill");
-      statusEl.textContent = aborted ? "Aborted" : `Failed: ${err.message}`;
-      statusEl.className = "status error";
-      fillEl.style.width = "100%";
-      fillEl.style.background = "#f44336";
+      const errStatusEl = item.querySelector(".status");
+      const errFillEl = item.querySelector(".fill");
+      errStatusEl.textContent = aborted ? "Aborted" : `Failed: ${err.message}`;
+      errStatusEl.className = "status error";
+      errFillEl.classList.remove("pulse");
+      errFillEl.style.width = "100%";
+      errFillEl.style.background = "#f44336";
     }
   }
 
